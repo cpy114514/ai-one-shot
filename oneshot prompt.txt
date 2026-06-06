@@ -1,0 +1,551 @@
+Use Goal mode.
+
+Your goal is to create a complete, playable, responsive, error-free single-file HTML5 tower defense game.
+
+The final deliverable must be exactly one complete `index.html` file.
+
+Do not stop after planning.
+Do not output a plan.
+Do not output explanations.
+Do not output Markdown.
+Do not wrap the code in code fences.
+Only output the full content of the final `index.html` file.
+
+The game must run by copying the output into `index.html` and opening it directly in a browser.
+
+Do not depend on external files, images, audio, libraries, frameworks, CDNs, or internet resources.
+
+Absolute priorities:
+
+1. The game must run without console errors.
+2. The game must be complete and playable.
+3. The UI and Canvas scaling must work correctly on different screen sizes.
+4. All buttons and screens must work.
+5. Tower placement, tower merging, minions, enemies, gold, HP, kills, restart, and infinite waves must work.
+6. Completeness is more important than complexity.
+
+If a feature is too complex, implement a simpler but fully working version.
+Never leave TODOs, pseudocode, missing systems, undefined variables, missing functions, or broken buttons.
+
+Game title:
+Moving Fortress TD
+
+Game concept:
+Create a complete infinite-wave tower defense game. The player controls a movable 5×5 fortress platform. The platform holds towers. Towers automatically attack enemies. The player earns gold from kills, buys towers, merges towers, buys minions, and tries to survive as many waves as possible.
+
+Do not add a skill tree.
+Do not add complex upgrade cards.
+Do not add a large roguelike upgrade system.
+
+The main progression should come from:
+
+* buying more towers
+* merging towers to higher levels
+* buying different minions
+* surviving harder enemy waves
+
+Required screens:
+
+1. Main Menu
+
+* Show the title: Moving Fortress TD
+* Buttons:
+
+  * Start Game
+  * How to Play
+  * Credits
+* Add a simple animated background using Canvas shapes or CSS.
+* The menu should look like a real game menu, not plain text.
+
+2. How to Play
+   Explain:
+
+* WASD moves the 5×5 platform.
+* Buy towers and click empty platform cells to place them.
+* Drag towers to move them.
+* Drag two same-type same-level towers together to merge them.
+* Buy minions to help fight enemies.
+* Survive infinite waves.
+* Enemies get stronger every wave.
+* Include a Back button.
+
+3. Gameplay Screen
+   Include:
+
+* Canvas game world
+* HTML UI overlay
+* Gold
+* Wave
+* Platform HP
+* Kills
+* Survival time
+* Selected item
+* Tower shop
+* Minion shop
+* Start Next Wave button
+* Pause button
+* Restart button
+
+4. Pause Menu
+
+* Open with Escape or Pause button.
+* Buttons:
+
+  * Resume
+  * Restart
+  * Main Menu
+* Gameplay updates must stop while paused.
+
+5. Game Over Screen
+   Show:
+
+* Final wave
+* Kills
+* Gold earned
+* Survival time
+* Buttons:
+
+  * Restart
+  * Main Menu
+
+6. Credits Screen
+
+* Simple screen with text:
+  “Made for a one-prompt game challenge.”
+* Include Back button.
+
+Core gameplay:
+
+* WASD moves the entire 5×5 platform.
+* The platform cannot leave the world boundary.
+* The platform has 25 grid cells.
+* The center cell is the fortress core.
+* Each cell can hold one tower.
+* Enemies spawn from the edges of the map and move toward the platform.
+* Use simple direct movement toward the platform. Do not use complicated pathfinding.
+* If enemies touch the platform/core, they damage platform HP.
+* Towers placed on platform cells automatically attack enemies in range.
+* Killing enemies gives gold.
+* Player can buy towers and place them on empty platform cells.
+* Player can drag towers to move them.
+* Dragging one tower onto another tower of the same type and same level merges them.
+* Merge result: target tower level +1, source cell becomes empty.
+* Max tower level is 5.
+* Player can buy minions.
+* Minions spawn near the platform and automatically fight enemies.
+* The game has infinite waves and only ends when platform HP reaches 0.
+
+Responsive UI and Canvas scaling:
+This is extremely important.
+
+HTML requirements:
+
+* Include this viewport meta tag:
+  `<meta name="viewport" content="width=device-width, initial-scale=1.0">`
+
+Canvas requirements:
+
+* Canvas must visually fill the browser window.
+* Use CSS width: 100vw and height: 100vh.
+* Use devicePixelRatio correctly.
+* Use this approach:
+
+  * canvas.width = window.innerWidth * devicePixelRatio
+  * canvas.height = window.innerHeight * devicePixelRatio
+  * canvas.style.width = window.innerWidth + "px"
+  * canvas.style.height = window.innerHeight + "px"
+  * ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0)
+* Draw using CSS pixel coordinates after applying the transform.
+* Do not multiply mouse coordinates by devicePixelRatio when drawing uses CSS pixel coordinates with ctx.setTransform.
+* Add a resize handler.
+* The game must still work after resizing the browser.
+* Do not use a fixed 1920×1080-only layout.
+* Canvas must not become blurry on high-DPI screens.
+
+Mouse coordinate requirements:
+Use this logic:
+
+* const rect = canvas.getBoundingClientRect()
+* mouseX = event.clientX - rect.left
+* mouseY = event.clientY - rect.top
+
+If using a camera:
+
+* Convert screen coordinates to world coordinates:
+
+  * worldX = mouseX + camera.x
+  * worldY = mouseY + camera.y
+
+UI layout requirements:
+
+* Canvas is the background.
+* HTML UI is an overlay above the canvas.
+* Use CSS flexbox/grid.
+* Use clamp() for font sizes, padding, panels, and buttons.
+* Shop buttons must wrap on small screens.
+* Menus must stay centered.
+* No important button should go off-screen.
+* Avoid hard-coded absolute positions that break on resize.
+* Use pointer-events correctly:
+
+  * Canvas should receive gameplay input.
+  * UI panels and buttons should receive clicks.
+* UI must work when the browser window is resized.
+
+Technical structure:
+Use clean JavaScript classes or organized objects, including:
+
+* Game
+* SceneManager
+* Platform
+* Tower
+* Enemy
+* Minion
+* Projectile
+* Particle
+* UIManager
+* WaveSystem
+
+Game loop:
+
+* Use requestAnimationFrame.
+* Use delta time.
+* Separate update() and draw().
+* Clamp delta time to avoid huge jumps after tab switching.
+* Pause must stop gameplay updates but still allow menus to work.
+* Do not create duplicate event listeners on restart.
+* Event listeners should be created once during initialization.
+* Restart should reset state, not reload the page.
+
+State reset on restart:
+Reset all of these:
+
+* enemies
+* towers/platform grid
+* minions
+* projectiles
+* particles
+* floating texts
+* wave number
+* gold
+* kills
+* HP
+* max HP
+* selected item
+* spawn timers
+* wave status
+* pause state
+* game over state
+* survival time
+
+Safe object handling:
+
+* Remove dead enemies, projectiles, minions, and particles.
+* Do not let arrays grow forever.
+* Use reverse loops or filtering when removing objects.
+* Limit particles and floating text count if needed.
+* Infinite waves should not cause memory leaks.
+* If too many enemies exist, delay spawning instead of freezing the game.
+* Keep collision detection simple using distance checks.
+
+World and camera:
+
+* Use a simple world larger than the screen.
+* Camera follows the platform smoothly.
+* Draw world objects by subtracting camera.x and camera.y.
+* Keep the camera system simple.
+* Platform must stay inside world bounds.
+* Enemies spawn just inside or slightly outside the world edges.
+
+Platform:
+
+* 5×5 grid.
+* Each cell can hold one tower.
+* Draw cells clearly.
+* Draw the core cell differently.
+* WASD movement should be smooth.
+* Platform movement speed should be balanced.
+* Platform should not pass outside world boundaries.
+
+Tower types:
+
+1. Arrow Tower
+
+* Cheap, fast single-target attack.
+* Good against normal enemies and runners.
+* Upgrade effect: more damage and faster attack.
+
+2. Cannon Tower
+
+* Slow area attack.
+* Projectile explodes on hit.
+* Good against swarm and splitter enemies.
+* Upgrade effect: more damage and bigger explosion.
+
+3. Frost Tower
+
+* Low damage.
+* Slows enemies.
+* Good against fast enemies.
+* Upgrade effect: stronger slow and longer slow duration.
+
+4. Laser Tower
+
+* Strong single-target beam.
+* Good against armored enemies and bosses.
+* Upgrade effect: higher beam damage and longer range.
+
+5. Support Tower
+
+* Does not attack directly.
+* Buffs nearby towers.
+* Show aura circle.
+* Upgrade effect: stronger buff and bigger aura range.
+
+Tower stats:
+
+* Each tower has type, level, damage, range, attack cooldown, and position.
+* Higher-level towers have stronger stats.
+* Higher-level towers should look slightly larger, brighter, or show a clear Lv number.
+* Support Tower should buff nearby towers in a simple way.
+* Avoid complex stacking bugs by recalculating support buffs each update or using simple temporary multipliers.
+
+Tower merging:
+
+* Same type + same level only.
+* Max level is 5.
+* If merge succeeds, show flash/particles/floating text.
+* If merge fails, return dragged tower to original cell.
+* If dragging onto an empty cell, move the tower.
+* If dragging outside platform, return tower to original cell.
+* Do not delete towers accidentally.
+
+Minion types:
+
+1. Soldier
+
+* Cheap melee unit.
+* Balanced HP and damage.
+
+2. Tank
+
+* Expensive.
+* Slow.
+* High HP.
+* Low damage.
+* Good for blocking bosses.
+
+3. Ranger
+
+* Ranged unit.
+* Low HP.
+* Attacks from distance.
+
+4. Medic
+
+* Weak attack.
+* Heals nearby minions.
+* Occasionally repairs platform HP slightly.
+
+Minion behavior:
+
+* Minions find the nearest enemy.
+* Melee minions move close and attack.
+* Ranged minions keep some distance and shoot.
+* Medic prioritizes healing nearby damaged minions.
+* If no healing target exists, Medic can repair platform HP slowly or weakly attack enemies.
+* Keep minion AI simple and reliable.
+
+Enemy types:
+
+1. Grunt
+
+* Basic enemy.
+
+2. Runner
+
+* Fast, low HP.
+
+3. Armored
+
+* Slow, high HP.
+
+4. Swarm
+
+* Small weak enemy.
+* Appears in groups.
+
+5. Shield
+
+* Has shield HP before normal HP.
+
+6. Splitter
+
+* On death, splits into two smaller enemies.
+
+7. Boss
+
+* Appears every 5 waves.
+* High HP.
+* Can summon small enemies or gain shield.
+
+Enemy behavior:
+
+* Enemies move toward the platform.
+* If close to a minion, enemies can attack the minion.
+* If they reach the platform, they damage platform HP and die or bounce back briefly.
+* Boss can have a simple special ability:
+
+  * occasionally summon small Grunt enemies
+  * or regenerate a small shield
+* Keep boss logic simple and safe.
+
+Infinite wave system:
+
+* Waves continue forever.
+* The game must not stop at a fixed wave count.
+* Wave difficulty scales forever.
+* Use simple formulas:
+
+  * enemyCount = 8 + wave * 2
+  * hpMultiplier = 1 + wave * 0.15
+  * speedMultiplier = 1 + Math.min(wave * 0.015, 0.8)
+  * damageMultiplier = 1 + wave * 0.08
+* Stronger enemy types appear more often in later waves.
+* Boss appears every 5 waves.
+* After all enemies in a wave are defeated, show Start Next Wave.
+* Track highest wave reached during the current session.
+
+Shop and economy:
+Starting gold: 120
+Platform HP: 100
+
+Tower costs:
+
+* Arrow Tower: 40
+* Cannon Tower: 70
+* Frost Tower: 60
+* Laser Tower: 90
+* Support Tower: 80
+
+Minion costs:
+
+* Soldier: 25
+* Tank: 60
+* Ranger: 45
+* Medic: 55
+
+Shop behavior:
+
+* Clicking a tower button selects it.
+* Clicking an empty platform cell places selected tower if the player has enough gold.
+* Buying a minion instantly spawns it near the platform.
+* If not enough gold, show a short warning message.
+* Show selected item clearly.
+* Prices should not become negative.
+
+Visual requirements:
+
+* Use Canvas shapes only.
+* No images.
+* No audio required.
+* The game must be readable and polished.
+* Use distinct colors and shapes for:
+
+  * platform
+  * core
+  * each tower type
+  * each enemy type
+  * each minion type
+  * projectiles
+  * explosions
+  * laser beams
+  * frost slow effects
+  * support aura
+* Add simple particles for:
+
+  * hits
+  * deaths
+  * merging
+  * explosions
+  * wave start
+* Background should have a subtle grid, starfield, or wasteland style.
+* Do not overdo effects if they risk performance.
+
+Controls:
+
+* WASD: move platform
+* Mouse click: place selected tower
+* Mouse drag: move tower or merge towers
+* Escape: pause/resume
+
+Buttons:
+
+* Start Game
+* How to Play
+* Credits
+* Back
+* Pause
+* Resume
+* Restart
+* Main Menu
+* Start Next Wave
+* Tower purchases
+* Minion purchases
+
+Performance requirements:
+
+* Keep the game smooth.
+* Do not spawn unlimited particles.
+* Do not spawn unlimited projectiles.
+* Clean up old objects.
+* Avoid very expensive nested loops when possible.
+* It is okay to use simple nearest-target search because the game scale is small.
+* If object count gets high, prioritize stability over visual effects.
+
+Error prevention:
+
+* Use safe default values.
+* Check objects exist before accessing properties.
+* Avoid using variables before declaration.
+* Avoid relying on load order bugs.
+* Keep all code inside one script tag near the end of body.
+* Initialize after DOM elements exist.
+* Do not use modules.
+* Do not use TypeScript.
+* Do not use import/export.
+* Do not use build tools.
+* Do not use localStorage unless implemented safely. The game can track highest wave only during the current session.
+
+Fallback rules:
+If full fancy behavior is risky, use these simpler implementations:
+
+* Enemy pathfinding: direct movement toward platform.
+* Collision: distance-based circle checks.
+* Support Tower: simple aura multiplier.
+* Boss ability: simple summon or shield timer.
+* Laser: draw a line and apply damage over time.
+* Frost: apply slow multiplier and timer.
+* Cannon: projectile that creates circular explosion.
+* UI animation: simple CSS transitions.
+* Background: simple grid and moving dots.
+
+Before final output, internally check:
+
+1. The game opens directly in a browser.
+2. There are no missing functions, missing classes, or undefined variables.
+3. All buttons work.
+4. Restart fully resets the game.
+5. Main Menu, How to Play, Credits, Gameplay, Pause Menu, and Game Over all work.
+6. Infinite waves work forever until platform HP reaches 0.
+7. Canvas scaling works after window resize.
+8. Mouse clicking and dragging still work correctly after resize and on high-DPI screens.
+9. UI does not overflow or become unreadable on small screens.
+10. There are no obvious console errors.
+
+Final output rule:
+Only output the complete `index.html` content.
+No explanation.
+No Markdown.
+No code fence.
+No extra text.
